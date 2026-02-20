@@ -2,101 +2,85 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "@/lib/axios";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { LogOut, Trash2, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge"; // npx shadcn@latest add badge
+import { Trash2, CheckCircle, Clock } from "lucide-react";
 
 export default function Dashboard() {
   const [tasks, setTasks] = useState([]);
-  const [title, setTitle] = useState("");
   const navigate = useNavigate();
+  const userId = sessionStorage.getItem("userId");
 
   const fetchTasks = async () => {
     try {
-      const res = await api.get("/tasks");
+      const res = await api.get(`/tasks?userId=${userId}`);
       setTasks(res.data);
     } catch (err) {
-      toast.error("Session expired. Please login again.");
-      navigate("/login");
+      toast.error("Failed to fetch tasks");
     }
   };
 
-  useEffect(() => { fetchTasks(); }, []);
+  useEffect(() => {
+    if (!userId) navigate("/login");
+    fetchTasks();
+  }, []);
 
-  const handleAddTask = async (e) => {
-    e.preventDefault();
-    if (!title.trim()) return;
+  const handleUpdateStatus = async (taskId, currentStatus) => {
+    const nextStatus = currentStatus === "Pending" ? "In Progress" : "Completed";
     try {
-      await api.post("/tasks", { title });
-      setTitle("");
+      await api.put(`/tasks/${taskId}`, { status: nextStatus, userId });
+      toast.success(`Task marked as ${nextStatus}`);
       fetchTasks();
-      toast.success("Task added!");
     } catch (err) {
-      toast.error("Failed to add task");
+      toast.error("Update failed");
     }
   };
 
-  const deleteTask = async (id) => {
+  const handleDelete = async (taskId) => {
     try {
-      await api.delete(`/tasks/${id}`);
-      setTasks(tasks.filter(t => t._id !== id));
+      await api.delete(`/tasks/${taskId}`, { data: { userId } });
       toast.success("Task deleted");
+      fetchTasks();
     } catch (err) {
-      toast.error("Could not delete task");
+      toast.error("Delete failed");
     }
-  };
-
-  const handleLogout = async () => {
-    await api.post("/auth/logout");
-    toast.info("Logged out");
-    navigate("/login");
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 p-4 md:p-8">
-      <div className="max-w-2xl mx-auto space-y-6">
-        
-        {/* Header */}
-        <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold tracking-tight">Task Manager</h1>
-          <Button variant="ghost" size="sm" onClick={handleLogout}>
-            <LogOut className="mr-2 h-4 w-4" /> Logout
-          </Button>
-        </div>
+    <div className="p-8 max-w-5xl mx-auto space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold">Your Tasks</h1>
+        <Button onClick={() => navigate("/add-task")}>+ New Task</Button>
+      </div>
 
-        {/* Add Task Form */}
-        <Card>
-          <CardContent className="pt-6">
-            <form onSubmit={handleAddTask} className="flex gap-2">
-              <Input 
-                placeholder="What needs to be done?" 
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-              />
-              <Button type="submit">
-                <Plus className="h-4 w-4 mr-1" /> Add
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
+      <div className="grid gap-4">
+        {tasks.map((task) => (
+          <Card key={task._id} className="flex items-center justify-between p-4 shadow-sm">
+            <div className="space-y-1">
+              <CardTitle className="text-lg">{task.title}</CardTitle>
+              <p className="text-sm text-muted-foreground">{task.description}</p>
+              <div className="flex gap-2 text-xs">
+                <Badge variant="outline">Priority: {task.priority}</Badge>
+                <Badge variant="secondary">Due: {new Date(task.dueDate).toLocaleDateString()}</Badge>
+                <Badge className={task.status === "Completed" ? "bg-green-500" : "bg-blue-500"}>
+                  {task.status}
+                </Badge>
+              </div>
+            </div>
 
-        {/* Task List */}
-        <div className="space-y-3">
-          {tasks.length === 0 && (
-            <p className="text-center text-muted-foreground py-10">No tasks yet. Add one above!</p>
-          )}
-          {tasks.map((task) => (
-            <Card key={task._id} className="hover:shadow-md transition-shadow">
-              <CardHeader className="p-4 flex flex-row items-center justify-between space-y-0">
-                <CardTitle className="text-md font-medium">{task.title}</CardTitle>
-                <Button variant="ghost" size="icon" onClick={() => deleteTask(task._id)}>
-                  <Trash2 className="h-4 w-4 text-destructive" />
+            <div className="flex gap-2">
+              {task.status !== "Completed" && (
+                <Button size="sm" variant="ghost" onClick={() => handleUpdateStatus(task._id, task.status)}>
+                  <CheckCircle className="h-4 w-4 text-green-600" />
                 </Button>
-              </CardHeader>
-            </Card>
-          ))}
-        </div>
+              )}
+              <Button size="sm" variant="ghost" onClick={() => handleDelete(task._id)}>
+                <Trash2 className="h-4 w-4 text-destructive" />
+              </Button>
+            </div>
+          </Card>
+        ))}
       </div>
     </div>
   );

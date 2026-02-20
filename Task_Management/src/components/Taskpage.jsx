@@ -21,9 +21,18 @@ export default function AddTask() {
 
 const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    const userId = sessionStorage.getItem("userId");
+
+    // BLOCKER: Don't send the request if ID is missing
+    if (!userId || userId === "undefined") {
+        toast.error("User session not found. Please log in again.");
+        return navigate("/login");
+    }
+
     const taskData = {
         ...formData,
-        userId: sessionStorage.getItem("userId") // Manually pull from storage
+        userId: userId 
     };
 
     try {
