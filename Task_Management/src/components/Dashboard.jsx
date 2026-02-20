@@ -5,7 +5,8 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge"; // npx shadcn@latest add badge
+import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Trash2, CheckCircle, Clock } from "lucide-react";
 
 export default function Dashboard() {
@@ -27,9 +28,8 @@ export default function Dashboard() {
     fetchTasks();
   }, []);
 
-  const handleUpdateStatus = async (taskId, currentStatus) => {
-    const nextStatus =
-      currentStatus === "Pending" ? "In Progress" : "Completed";
+  const handleToggleStatus = async (taskId, isChecked) => {
+    const nextStatus = isChecked ? "Completed" : "Pending";
     try {
       await api.put(`/api/tasks/${taskId}`, { status: nextStatus, userId });
       toast.success(`Task marked as ${nextStatus}`);
@@ -104,19 +104,13 @@ export default function Dashboard() {
                     </div>
                   </div>
 
-                  <div className="flex gap-2">
-                    {task.status !== "Completed" && (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="hover:bg-green-50"
-                        onClick={() =>
-                          handleUpdateStatus(task._id, task.status)
-                        }
-                      >
-                        <CheckCircle className="h-4 w-4 text-green-600" />
-                      </Button>
-                    )}
+                  <div className="flex items-center gap-4">
+                    <Checkbox
+                      checked={task.status === "Completed"}
+                      onCheckedChange={(checked) =>
+                        handleToggleStatus(task._id, checked)
+                      }
+                    />
                     <Button
                       size="sm"
                       variant="ghost"

@@ -5,6 +5,7 @@ const cors = require('cors');
 const authRoutes = require('./routes/userRoutes');
 const taskRoutes = require('./routes/taskRoutes');
 const session = require('express-session');
+const { MongoStore } = require('connect-mongo');
 require('./db')
 
 const app = express();
@@ -23,8 +24,12 @@ app.use(session({
   secret: process.env.SESSION_SECRET || 'secret',
   resave: false,
   saveUninitialized: false,
+  store: MongoStore.create({
+    mongoUrl: process.env.MONGODB_URI,
+    collectionName: 'sessions'
+  }),
   cookie: { 
-    secure: false, // Must be false for localhost
+    secure: process.env.NODE_ENV === 'production', 
     httpOnly: true, 
     maxAge: 1000 * 60 * 60 
   }
@@ -37,6 +42,3 @@ app.use('/api/tasks', taskRoutes);
 
 
 app.listen(PORT, () => console.log(`Server on ${PORT}`));
-
-
-

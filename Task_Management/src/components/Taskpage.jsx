@@ -108,35 +108,32 @@ export default function AddTask() {
               </div>
             </div>
 
-            {/* Button for quick Status toggle */}
-            <div className="flex items-center justify-between border p-3 rounded-md bg-white">
+            {/* Proper Checkbox for Status toggle */}
+            <div className="flex items-center space-x-3 border p-4 rounded-md bg-white">
+              <Checkbox
+                id="task-status"
+                checked={formData.status === "Completed"}
+                onCheckedChange={(checked) =>
+                  setFormData({
+                    ...formData,
+                    status: checked ? "Completed" : "Pending",
+                  })
+                }
+              />
               <div className="grid gap-1.5 leading-none">
-                <Label className="text-sm font-medium">Task Status</Label>
+                <Label
+                  htmlFor="task-status"
+                  className="text-sm font-medium cursor-pointer"
+                >
+                  Mark as Completed
+                </Label>
                 <p className="text-sm text-muted-foreground">
-                  Current:{" "}
-                  <span className="font-bold text-primary">
+                  Current Status:{" "}
+                  <span className="font-semibold text-primary">
                     {formData.status}
                   </span>
                 </p>
               </div>
-              <Button
-                type="button"
-                variant={
-                  formData.status === "Completed" ? "default" : "outline"
-                }
-                size="sm"
-                onClick={() =>
-                  setFormData({
-                    ...formData,
-                    status:
-                      formData.status === "Completed" ? "Pending" : "Completed",
-                  })
-                }
-              >
-                {formData.status === "Completed"
-                  ? "Completed"
-                  : "Mark as Completed"}
-              </Button>
             </div>
 
             <Button type="submit" className="w-full">
