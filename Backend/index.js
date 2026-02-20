@@ -13,9 +13,9 @@ const PORT = process.env.PORT || 5000;
 
 app.use(express.json());
 app.use(cors({
-  origin: 'http://localhost:5173', 
+  origin: ['http://localhost:5173','https://task-mangement-lac-eta.vercel.app'],
   credentials: true 
-}));
+}));  
 
 
 

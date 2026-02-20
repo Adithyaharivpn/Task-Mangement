@@ -8,7 +8,8 @@ export default function Navbar() {
 
   const handleLogout = async () => {
     try {
-      await api.post("/auth/logout");
+      await api.post("/api/auth/logout");
+      sessionStorage.clear();
       toast.success("Logged out");
       navigate("/login");
     } catch (err) {
@@ -22,9 +23,12 @@ export default function Navbar() {
         <Link to="/dashboard" className="text-xl font-bold tracking-tight">
           TaskMaster
         </Link>
-        
+
         <div className="flex items-center gap-4">
-          <Link to="/dashboard" className="text-sm font-medium hover:text-primary">
+          <Link
+            to="/dashboard"
+            className="text-sm font-medium hover:text-primary"
+          >
             Tasks
           </Link>
           <Button variant="outline" size="sm" onClick={handleLogout}>

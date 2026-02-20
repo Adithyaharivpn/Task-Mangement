@@ -24,7 +24,7 @@ export default function Login() {
     e.preventDefault();
     setLoading(true);
     try {
-        const res = await api.post("/auth/login", { email, password });
+        const res = await api.post("/api/auth/login", { email, password });
         
         sessionStorage.setItem("userId", res.data.userId);
         sessionStorage.setItem("userName", res.data.userName);

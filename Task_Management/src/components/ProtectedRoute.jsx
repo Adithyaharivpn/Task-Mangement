@@ -1,10 +1,13 @@
+import { Navigate } from "react-router-dom";
+
 export default function ProtectedRoute({ children }) {
+  const isAuthenticated = sessionStorage.getItem("userId");
+  const isActuallyAuthenticated =
+    isAuthenticated && isAuthenticated !== "undefined";
 
-    const isAuthenticated = sessionStorage.getItem("userId");
+  if (!isActuallyAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
 
-    if (!isAuthenticated) {
-        return <Navigate to="/" replace />;
-    }
-
-    return children;
+  return children;
 }
